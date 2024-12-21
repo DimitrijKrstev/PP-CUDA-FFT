@@ -1,3 +1,6 @@
+#ifndef FFT_H
+#define FFT_H
+
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
@@ -27,3 +30,5 @@ cuDoubleComplex testInput[] = {
 };
 
 const int testN = 8;
+
+#endif
