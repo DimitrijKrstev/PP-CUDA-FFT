@@ -1,3 +1,4 @@
+
 #include "fft.h"
 
 uint32_t reverse_bits(uint32_t x) {
@@ -44,9 +45,31 @@ int fft(const cuDoubleComplex* x, cuDoubleComplex* Y, uint32_t N) {
     return EXIT_SUCCESS;
 }
 
-int main(){
-  cuDoubleComplex output[testN];
-  fft(testInput, output, testN);
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <input_file> <N>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
 
-  print_complex_array("FFT-iterative output", output, testN);
+    const char* input_file = argv[1];
+    uint32_t N = (uint32_t)atoi(argv[2]);
+
+    cuDoubleComplex* input = (cuDoubleComplex*)malloc(N * sizeof(cuDoubleComplex));
+    cuDoubleComplex* output = (cuDoubleComplex*)malloc(N * sizeof(cuDoubleComplex));
+
+    if(read_file_input(input_file, N, input) != EXIT_SUCCESS){
+        free(input);
+        return EXIT_FAILURE;
+    }
+
+    if (fft(input, output, N) != EXIT_SUCCESS) {
+        free(input);
+        return EXIT_FAILURE;
+    }
+
+    print_complex_array("FFT-iterative output", output, N);
+
+    free(input);
+    return EXIT_SUCCESS;
 }
+

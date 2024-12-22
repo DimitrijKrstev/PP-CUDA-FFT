@@ -18,9 +18,30 @@ int dft(const cuDoubleComplex* x, cuDoubleComplex* Y, uint32_t N) {
     return EXIT_SUCCESS;
 }
 
-int main() {
-  cuDoubleComplex output[testN];
-  dft(testInput, output, testN);
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <input_file> <N>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
 
-  print_complex_array("Standard dft output", output, testN);
+    const char* input_file = argv[1];
+    uint32_t N = (uint32_t)atoi(argv[2]);
+
+    cuDoubleComplex* input = (cuDoubleComplex*)malloc(N * sizeof(cuDoubleComplex));
+    cuDoubleComplex output[N];
+
+    if(read_file_input(input_file, N, input) != EXIT_SUCCESS){
+        free(input);
+        return EXIT_FAILURE;
+    }
+
+    if (dft(input, output, N) != EXIT_SUCCESS) {
+        free(input);
+        return EXIT_FAILURE;
+    }
+
+    print_complex_array("Standard dft output", output, N);
+
+    free(input);
+    return EXIT_SUCCESS;
 }

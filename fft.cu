@@ -11,7 +11,6 @@ __host__ void precompute_twiddle_factors(cuDoubleComplex* twiddle, uint32_t N) {
     }
 }
 
-// FFT kernel
 __global__ void fft_kernel(cuDoubleComplex* Y, cuDoubleComplex* twiddle, uint32_t N, int logN) {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
     if (i >= N / 2) return;
@@ -85,14 +84,30 @@ int fft_gpu(const cuDoubleComplex* x, cuDoubleComplex* Y, uint32_t N) {
     return EXIT_SUCCESS;
 }
 
-int main() {
-    cuDoubleComplex* gpu_output = (cuDoubleComplex*)malloc(testN * sizeof(cuDoubleComplex));
+int main(int argc, char* argv[]){
+  if (argc != 3) {
+        fprintf(stderr, "Usage: %s <input_file> <N>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
 
-    printf("Running Parallel FFT...\n");
-    fft_gpu(testInput, gpu_output, testN);
-    print_complex_array("Parallel FFT Output", gpu_output, testN);
+    const char* input_file = argv[1];
+    uint32_t N = (uint32_t)atoi(argv[2]);
 
-    free(gpu_output);
+    cuDoubleComplex* input = (cuDoubleComplex*)malloc(N * sizeof(cuDoubleComplex));
+    cuDoubleComplex* gpu_output = (cuDoubleComplex*)malloc(N * sizeof(cuDoubleComplex));
 
-    return 0;
+    if(read_file_input(input_file, N, input) != EXIT_SUCCESS){
+        free(input);
+        return EXIT_FAILURE;
+    }
+
+    if (fft_gpu(input, gpu_output, N) != EXIT_SUCCESS) {
+        free(input);
+        return EXIT_FAILURE;
+    }
+
+    print_complex_array("Parallelised FFT output", gpu_output, N);
+
+    free(input);
+    return EXIT_SUCCESS;
 }
